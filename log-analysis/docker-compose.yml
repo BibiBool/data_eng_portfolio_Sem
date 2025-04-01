@@ -2,14 +2,14 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:13
+    image: postgres:15
     container_name: archives-postgres
     environment:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     ports:
-      - "5432:5432"
+      - "5438:5432"
     networks:
       airflow_network:
         ipv4_address: 172.20.0.2
