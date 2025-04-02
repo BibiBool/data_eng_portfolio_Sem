@@ -35,7 +35,7 @@ def download_s3_logs (bucket_name: str, object_prefix: str, local_directory: str
             else:
                 print(f"No more objects found with prefix: {object_prefix} in this page")
 
-    except Exception as es:
+    except Exception as e:
         print(f"An error occurred: {e}")
 
 download_s3_logs(

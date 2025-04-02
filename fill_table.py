@@ -9,9 +9,13 @@ import pandas as pd
 
 def create_connection():
     """ Create a database connection to the postgresql database"""
-    conn = None
+    
     try:
-        None
+        conn = psycopg2.connect("dbname=postgres", 
+                                "user=postgres", 
+                                "password=postgres", 
+                                "host=localhost", 
+                                "port=5435")
     except Exception as e:
         print(e)
         print("Connection to database failed")
