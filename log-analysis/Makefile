@@ -1,12 +1,12 @@
-COMPOSE_FILE := docker-compose.yml
+COMPOSE_FILE := docker-compose.yaml
 
 up:
-	docker compose -f $(COMPOSE_FILE) up -d
+	docker compose up airflow-init && docker compose up
 
 down:
-	docker compose -f $(COMPOSE_FILE) down
+	docker compose down
 
 clean: down
-	docker compose -f $(COMPOSE_FILE) images | awk 'NR>1 {print $$3}' | xargs docker rmi -f
+	docker compose down
 
 .PHONY: up down clean
