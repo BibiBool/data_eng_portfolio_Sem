@@ -1,7 +1,12 @@
 COMPOSE_FILE := docker-compose.yaml
 
-up:
+perms:
+	sudo mkdir -p logs plugins dags && sudo chmod -R u=rwx,g=rwx,o=rwx logs plugins dags 
+
+docker-spin-up:
 	docker compose up airflow-init && docker compose up
+
+up:	perms docker-spin-up
 
 down:
 	docker compose down
