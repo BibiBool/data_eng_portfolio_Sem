@@ -23,10 +23,18 @@ def fill_table():
                 dbname=os.getenv("DB_NAME"),
                 user=os.getenv("DB_USER"),
                 password=os.getenv("DB_PASSWORD"),
-                host=os.getenv("DB_HOST"),
-                port=os.getenv("DB_PORT")
+                host=os.getenv("DB_HOST")
             )
             print("Connection to database successful")
+
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT datname 
+                FROM pg_database 
+                WHERE datistemplate = false; """)
+            databases = cursor.fetchall()
+            print(databases)
+            return databases
         except Exception as e:
             print(e)
             print("Connection to database failed. Verify your credentials in the .env file")
