@@ -11,21 +11,11 @@ import os
     catchup=False,
     tags=["archives-log-analysis"]
 )
-def upload_data_to_postgres_dag():
+def upload_data_to_postgres_dag_v2():
     """Upload data from the aws raw bucket to the analytics postgres table"""
 
     @task
-    def download_aws_log():
-        """Download the aws log file from the S3 bucket"""
-        # **IMPLEMENT YOUR S3 DOWNLOAD LOGIC HERE**
-        # This is a placeholder - replace with actual code to download
-        # the file and return the local path.
-        local_file_path = "/opt/airflow/raw_data/E4ZNTW6XOW5DN.2025-04-12-15.b3632fd3.parquet"
-        print(f"Downloaded file to: {local_file_path}")
-        return local_file_path
-
-    @task
-    def upload_to_postgres(file_path):
+    def upload_to_postgres_v2(file_path):
         import pandas as pd
         import psycopg2
         from psycopg2 import sql
@@ -77,8 +67,7 @@ def upload_data_to_postgres_dag():
                 print("database connection closed")
 
     # Define the task dependency and pass the output of download_aws_log
-    downloaded_file_path = "opt/airflow/raw_data/E4ZNTW6XOW5DN.2025-04-12-15.b3632fd3.parquet"
-    upload_to_postgres(file_path='opt/airflow/raw_data/E4ZNTW6XOW5DN.2025-04-12-15.b3632fd3.parquet')  
+    upload_to_postgres_v2(file_path='opt/airflow/raw_data/E4ZNTW6XOW5DN.2025-04-12-15.b3632fd3.parquet')  
 
-upload_data_to_postgres_dag()
+upload_data_to_postgres_dag_v2()
              

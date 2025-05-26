@@ -43,7 +43,6 @@
 #                                Default: ''
 #
 # Feel free to modify this file to suit your needs.
----
 version: '3.8'
 x-airflow-common:
   &airflow-common
@@ -51,10 +50,8 @@ x-airflow-common:
     context: ./containers/airflow/
   environment:
     &airflow-common-env
-    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DATABASE_USER}:${AIRFLOW_DATABASE_PASSWORD}@${AIRFLOW_DATABASE_HOST}/airflow
-    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://${AIRFLOW_DATABASE_USER}:${AIRFLOW_DATABASE_PASSWORD}@${AIRFLOW_DATABASE_HOST}/airflow
-    AIRFLOW__CELERY__BROKER_URL: redis://:@${AIRFLOW_CELERY_BROKER_HOST}:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
@@ -74,10 +71,8 @@ x-airflow-common:
     &airflow-common-depends-on
     postgres:
       condition: service_healthy
-    redis:
-      condition: service_healthy
   networks:
-      airflow_network:
+    airflow_network:
 
 services:
   postgres:
@@ -100,22 +95,6 @@ services:
     networks:
       airflow_network:
 
-  redis:
-    # Redis is limited to 7.2-bookworm due to licencing change
-    # https://redis.io/blog/redis-adopts-dual-source-available-licensing/
-    image: redis:7.2-bookworm
-    expose:
-      - 6379
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 30s
-      retries: 50
-      start_period: 30s
-    restart: always
-    networks:
-      airflow_network:
-        ipv4_address: 172.20.0.25
 
   airflow-webserver:
     <<: *airflow-common
@@ -140,7 +119,9 @@ services:
     <<: *airflow-common
     command: scheduler
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      test:
+        - "CMD-SHELL"
+        - 'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"'
       interval: 30s
       timeout: 10s
       retries: 5
@@ -155,19 +136,15 @@ services:
 
   airflow-worker:
     <<: *airflow-common
-    command: celery worker
+    command: worker
     healthcheck:
-      # yamllint disable rule:line-length
-      test:
-        - "CMD-SHELL"
-        - 'celery --app airflow.providers.celery.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}" || celery --app airflow.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}"'
+      test: ["CMD-SHELL", 'airflow jobs check --job-type WorkerJob --hostname "$${HOSTNAME}"']
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 30s
     environment:
       <<: *airflow-common-env
-      DUMB_INIT_SETSID: "0"
     restart: always
     depends_on:
       <<: *airflow-common-depends-on
@@ -239,11 +216,11 @@ services:
           echo
           echo -e "\033[1;33mWARNING!!!: You have not enough resources to run Airflow (see above)!\e[0m"
           echo "Please follow the instructions to increase amount of resources available:"
-          echo "   https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#before-you-begin"
+          echo "  https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#before-you-begin"
           echo
         fi
-        mkdir -p /sources/logs /sources/dags /sources/plugins
-        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
+        mkdir -p /sources/logs /sources/dags /sources/plugins /sources/raw_data
+        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins,raw_data}
         exec /entrypoint airflow version
     # yamllint enable rule:line-length
     environment:
