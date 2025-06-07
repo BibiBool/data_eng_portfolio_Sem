@@ -3,6 +3,8 @@ from datetime import datetime
 import psycopg2
 import os
 
+# DAG using Airflow decorators
+# This DAG creates a PostgreSQL table for storing logs from AWS S3 bucket
 @dag(
     default_args={
         "owner": "sem",
@@ -37,7 +39,7 @@ def fill_table_v1():
             return True
         except Exception as e:
             print(f"Connection to database failed: {e}")
-            print("Verify your credentials in the .env file and Docker Compose configuration.")
+            print("Check your credentials in the .env file and Docker Compose configuration.")
             raise 
         finally:
             if conn:
