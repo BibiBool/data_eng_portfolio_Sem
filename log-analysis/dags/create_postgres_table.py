@@ -22,10 +22,10 @@ def fill_table_v1():
         """Check the connection to the database"""
         try:
             conn = psycopg2.connect(
-                dbname=os.getenv("AIRFLOW_DATABASE_DBNAME"),
-                user=os.getenv("AIRFLOW_DATABASE_USER"),
-                password=os.getenv("AIRFLOW_DATABASE_PASSWORD"),
-                host=os.getenv("AIRFLOW_DATABASE_HOST")
+                dbname=os.getenv("DATA_DB_DBNAME"),
+                user=os.getenv("DATA_DB_USER"),
+                password=os.getenv("DATA_DB_PASSWORD"),
+                host=os.getenv("DATA_DB_HOST")
             )
             print("Connection to database successful")
 
@@ -51,10 +51,10 @@ def fill_table_v1():
         cursor = None
         try:
             conn = psycopg2.connect(
-                dbname=os.getenv("AIRFLOW_DATABASE_DBNAME"),
-                user=os.getenv("AIRFLOW_DATABASE_USER"),
-                password=os.getenv("AIRFLOW_DATABASE_PASSWORD"),
-                host=os.getenv("AIRFLOW_DATABASE_HOST")
+                dbname=os.getenv("DATA_DB_DBNAME"),
+                user=os.getenv("DATA_DB_USER"),
+                password=os.getenv("DATA_DB_PASSWORD"),
+                host=os.getenv("DATA_DB_HOST")
             )
             cursor = conn.cursor()
             # Create table if it doesn't exist
@@ -96,8 +96,36 @@ def fill_table_v1():
                                sc_range_end INTEGER)
                            """)
             conn.commit()
-
             print("Table 'Archives_logs' created successfully.")
+
+            cursor.execute("""
+                           SELECT tablename
+                           FROM pg_catalog.pg_tables
+                           WHERE schemaname!= 'pg_catalog' AND schemaname != 'information_schema';
+                           """)
+            tables = cursor.fetchall()
+            print("\nTables in the database after creation:")
+            if tables:
+                for table in tables:
+                    print(f"- {table[0]}")
+            else:
+                print("No tables found (other tan system tables).")
+
+            print("\nColumns of 'Archives_logs' table:")
+            cursor.execute(f"""
+                SELECT column_name, data_type
+                FROM information_schema.columns
+                WHERE table_schema = 'public' 
+                AND table_name = 'archives_logs' 
+                ORDER BY ordinal_position;
+            """)
+            columns = cursor.fetchall()
+            if columns:
+                for col in columns:
+                    print(f"- {col[0]} ({col[1]})")
+            else:
+                print("No columns found for 'Archives_logs'. Check table name and schema.")
+        
         except psycopg2.Error as e:
             print(f"Error creating table: {e}")
             raise 

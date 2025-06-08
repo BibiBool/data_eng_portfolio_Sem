@@ -138,7 +138,7 @@ env.bak/
 venv.bak/
 log-analysis/logs/
 log-analysis/plugins
-
+v2.txt
 # Spyder project settings
 .spyderproject
 .spyproject

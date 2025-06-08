@@ -60,6 +60,11 @@ x-airflow-common:
     AIRFLOW_DATABASE_USER: ${AIRFLOW_DATABASE_USER}
     AIRFLOW_DATABASE_PASSWORD: ${AIRFLOW_DATABASE_PASSWORD}
     AIRFLOW_DATABASE_HOST: ${AIRFLOW_DATABASE_HOST}
+    # DATA_DB CREDENTIALS 
+    DATA_DB_DBNAME: ${DATA_DB_DBNAME}
+    DATA_DB_USER: ${DATA_DB_USER}
+    DATA_DB_PASSWORD: ${DATA_DB_PASSWORD}
+    DATA_DB_HOST: ${DATA_DB_HOST}
 
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
@@ -69,14 +74,15 @@ x-airflow-common:
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
-    postgres:
+    airflow-db:
       condition: service_healthy
   networks:
     airflow_network:
 
 services:
-  postgres:
-    container_name: postgres-arch
+  #Airflow metadata database
+  airflow-db:
+    container_name: airflow-db-container
     image: postgres:15
     environment:
       POSTGRES_USER: airflow
@@ -136,7 +142,7 @@ services:
 
   airflow-worker:
     <<: *airflow-common
-    command: worker
+    command: celery worker
     healthcheck:
       test: ["CMD-SHELL", 'airflow jobs check --job-type WorkerJob --hostname "$${HOSTNAME}"']
       interval: 30s
@@ -255,15 +261,15 @@ services:
   # or by explicitly targeted on the command line e.g. docker-compose up flower.
   # See: https://docs.docker.com/compose/profiles/
 
-  postgres-aws:
+  data-db:
     image: postgres:15
-    container_name: postgres-aws
+    container_name: data-db-container
     environment:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
-      POSTGRES_DB: airflow
+      POSTGRES_DB: postgres
     healthcheck:
-      test: [ "CMD", "pg_isready", "-U", "airflow" ]
+      test: [ "CMD", "pg_isready", "-U", "airflow", "-d", "postgres" ]
       interval: 5s
       retries: 5
     restart: always
@@ -285,7 +291,7 @@ services:
       airflow_network:
         ipv4_address: 172.20.0.21
     depends_on:
-      - postgres-aws
+      - data-db
 
   metabase:
     image: metabase/metabase:latest
@@ -298,9 +304,9 @@ services:
       MB_DB_PORT: 5432
       MB_DB_USER: airflow
       MB_DB_PASS: airflow
-      MB_DB_HOST: postgres-aws
+      MB_DB_HOST: data-db
     depends_on:
-      - postgres-aws
+      - data-db
     networks:
       airflow_network:
         ipv4_address: 172.20.0.22
