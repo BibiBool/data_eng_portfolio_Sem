@@ -59,7 +59,7 @@ def upload_data_to_postgres_dag():
         clean_logs_df = pd.read_csv(file_path)
 
         pg_hook = PostgresHook(postgres_conn_id='postgres_default')
-        table_name = "archives_logs"
+        table_name = "raw_cdn_logs"
 
         try:
             print(f"Initiating bulk upload to PostgreSQL table: {table_name}")

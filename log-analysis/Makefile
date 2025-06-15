@@ -1,7 +1,7 @@
 COMPOSE_FILE := docker-compose.yaml
 
 perms:
-	sudo mkdir -p logs plugins dags raw_data && sudo chmod -R u=rwx,g=rwx,o=rwx logs plugins dags raw_data
+	sudo mkdir -p logs plugins dags raw_data clean_data consolidated_data emr-scripts notebooks && sudo chmod -R u=rwx,g=rwx,o=rwx logs plugins dags raw_data clean_data consolidated_data emr-scripts notebooks
 
 docker-spin-up:
 	docker compose up airflow-init && docker compose up

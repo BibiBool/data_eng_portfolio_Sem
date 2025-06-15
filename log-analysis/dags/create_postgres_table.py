@@ -59,7 +59,7 @@ def fill_table_v1():
             cursor = conn.cursor()
             # Create table if it doesn't exist
             cursor.execute("""
-                           CREATE TABLE IF NOT EXISTS Archives_logs(
+                           CREATE TABLE IF NOT EXISTS raw_cdn_logs(
                                id SERIAL PRIMARY KEY,
                                date VARCHAR(255),
                                time VARCHAR(255),
@@ -96,7 +96,7 @@ def fill_table_v1():
                                sc_range_end INTEGER)
                            """)
             conn.commit()
-            print("Table 'Archives_logs' created successfully.")
+            print("Table 'raw_cdn_logs' created successfully.")
 
             cursor.execute("""
                            SELECT tablename
@@ -111,7 +111,7 @@ def fill_table_v1():
             else:
                 print("No tables found (other tan system tables).")
 
-            print("\nColumns of 'Archives_logs' table:")
+            print("\nColumns of 'raw_cdn_logs' table:")
             cursor.execute(f"""
                 SELECT column_name, data_type
                 FROM information_schema.columns
@@ -124,7 +124,7 @@ def fill_table_v1():
                 for col in columns:
                     print(f"- {col[0]} ({col[1]})")
             else:
-                print("No columns found for 'Archives_logs'. Check table name and schema.")
+                print("No columns found for 'raw_cdn_logs'. Check table name and schema.")
         
         except psycopg2.Error as e:
             print(f"Error creating table: {e}")

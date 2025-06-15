@@ -5,3 +5,4 @@ pyarrow
 boto3
 apache-airflow-providers-postgres
 apache-airflow-providers-amazon
+pyspark

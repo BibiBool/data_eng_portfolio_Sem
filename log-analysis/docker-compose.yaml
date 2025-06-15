@@ -71,6 +71,8 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/raw_data:/opt/airflow/raw_data
+    - ${AIRFLOW_PROJ_DIR:-.}/clean_data:/opt/airflow/raw_data
+    - ${AIRFLOW_PROJ_DIR:-.}/consolidated_data:/opt/airflow/raw_data
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -310,6 +312,35 @@ services:
     networks:
       airflow_network:
         ipv4_address: 172.20.0.22
+
+  pyspark-notebook:
+    container_name: pyspark-notebook
+    build:
+      context: ./containers/pyspark/ # Path to your PySpark Dockerfile
+    ports:
+      - "8888:8888" # Jupyter Lab
+      - "4040:4040" # Spark UI
+    volumes:
+      - ./raw_data:/home/jupyter/raw_data # Example: Mount a 'data' folder from your host into the container
+      - ./clean_data:/home/jupyter/clean_data 
+      - ./consolidated_data:/home/jupyter/consolidated_data 
+      - ./notebooks:/home/jupyter/notebooks 
+      - ./emr-scripts:/home/jupyter/emr-scripts 
+    environment:
+      # These environment variables might be useful if your PySpark jobs need to connect to data-db
+      PG_HOST: data-db
+      PG_PORT: 5432
+      PG_DATABASE: postgres
+      PG_USER: airflow
+      PG_PASSWORD: airflow
+    networks:
+      airflow_network:
+        # Optional: Assign a static IP if you need predictable network addressing
+        # ipv4_address: 172.20.0.23
+    depends_on:
+      # PySpark might need the data-db to be ready to run jobs
+      data-db:
+        condition: service_healthy
 
 networks:
   airflow_network:
