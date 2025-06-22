@@ -138,7 +138,12 @@ env.bak/
 venv.bak/
 log-analysis/logs/
 log-analysis/plugins
-log-analysis/raw_data/*
+log-analysis/raw_data/
+log-analysis/clean_data/
+log-analysis-airflow/consolidated_data
+log-analysis-airflow/logs
+log-analysis-airflow/plugins
+log-analysis-airflow/raw_data
 v2.txt
 # Spyder project settings
 .spyderproject
