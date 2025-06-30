@@ -148,7 +148,7 @@ def website_logs_generator_dag():
 
 
     # Task dependencies
-    log_file_path = generate_website_logs(execution_date_str="{{ logical_date.strftimr('%Y-%m-%d') }}")
+    log_file_path = generate_website_logs(execution_date_str="{{ logical_date.strftime('%Y-%m-%d') }}")
     process_logs(filepath=log_file_path)
 
 website_logs_generator_dag()

@@ -20,20 +20,19 @@ import os
 )
 def upload_data_to_postgres_dag():
     """Upload data from the aws raw bucket to the analytics postgres table"""
-    yesterday = "{{ logical_date }}"
 
     @task
-    def download_aws_log():
+    def download_aws_log(execution_date_str : str = "{{ logical_date }}"):
         """Download the aws log file from the S3 bucket"""
         # **IMPLEMENT YOUR S3 DOWNLOAD LOGIC HERE**
         local_directory= "/opt/airflow/raw_data"
-        local_filename = f"website_logs_{yesterday}.parquet"
+        local_filename = f"website_logs_{execution_date_str}.parquet"
         file_path = os.path.join(local_directory, local_filename)
         print(f"Downloaded file to: {file_path}")
         return file_path
     
     @task
-    def clean_and_convert_logs(file_path):
+    def clean_and_convert_logs(file_path: str, execution_date_str : str = "{{ logical_date }}"):
         print(os.listdir("/opt/airflow/raw_data"))
         print(f"Attempting to process file: {file_path}")
         if not os.path.exists(file_path):
@@ -43,7 +42,7 @@ def upload_data_to_postgres_dag():
         logs_df = pd.read_parquet(file_path)
         print(f"DataFrame shape: {logs_df.shape}")
 
-        staging_area = f"/opt/airflow/raw_data/website_logs_staged_{yesterday}.csv"
+        staging_area = f"/opt/airflow/raw_data/website_logs_staged_{execution_date_str}.csv"
         logs_df.columns = [col.lower() for col in logs_df.columns]
         logs_df = logs_df.replace("-", np.nan)
         clean_logs_df = convert_dataframe_column_types(logs_df)
@@ -59,7 +58,7 @@ def upload_data_to_postgres_dag():
             raise FileNotFoundError(f"File not found at path: {staging_area}")
         print(f"File found at: {staging_area}")
 
-        clean_logs_df = pd.read_parquet(staging_area)
+        clean_logs_df = pd.read_csv(staging_area)
 
         # Ensure you have registered your Postgres connection in Airflow with the ID 'postgres_default'
         pg_hook = PostgresHook(postgres_conn_id='postgres_default')
@@ -76,16 +75,14 @@ def upload_data_to_postgres_dag():
             print(f"{len(clean_logs_df)} rows successfully inserted into the {table_name} table.")
 
         except psycopg2.Error as e:
-             # Catch broader exceptions for database interaction errors
             print(f"Error during database upload: {e}")
             raise # Re-raise the exception to mark the Airflow task as failed
-        finally:
-            print("database connection closed")
+
 
     # Define the task dependency and pass the output of download_aws_log
-    downloaded_file_path = download_aws_log()
-    cleaned_logs = clean_and_convert_logs(file_path=downloaded_file_path)
-    upload_to_postgres(file_path=cleaned_logs) 
+    downloaded_file_path = download_aws_log(execution_date_str = "{{ logical_date.strftime('%Y-%m-%d')}}")
+    cleaned_logs = clean_and_convert_logs(file_path=downloaded_file_path, execution_date_str = "{{ logical_date.strftime('%Y-%m-%d')}}")
+    upload_to_postgres(staging_area=cleaned_logs) 
 
 upload_data_to_postgres_dag()
              
