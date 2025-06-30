@@ -76,7 +76,7 @@ def website_logs_generator_dag():
                 "sc_bytes": random.randint(100, 100000),
                 "c_ip": ip_pool[i], # Assign pre-generated IP
                 "cs_method": random.choice(http_methods),
-                "cs_Host": fake.domain_name(),
+                "cs_Host": "d8bnainxtot1t.cloudfront.net",
                 "cs_uri_stem": fake.uri_path(),
                 "sc_status": random.choice(sc_statuses),
                 "cs_Referer": fake.uri() if random.random() > 0.1 else "-", # 90% chance of referrer
@@ -85,7 +85,7 @@ def website_logs_generator_dag():
                 "cs_Cookie": fake.md5() if random.random() > 0.3 else "-", # 70% chance of cookie
                 "x_edge_result_type": random.choice(x_edge_result_types),
                 "x_edge_request_id": str(uuid.uuid4()),
-                "x_host_header": fake.domain_name(),
+                "x_host_header": "archivesnationales-ht.com",
                 "cs_protocol": "HTTPS" if random.random() > 0.1 else "HTTP", # Mostly HTTPS
                 "cs_bytes": random.randint(50, 5000),
                 "time_taken": round(random.uniform(0.001, 2.5), 3),
