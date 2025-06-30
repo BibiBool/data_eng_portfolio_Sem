@@ -20,7 +20,7 @@ import os
 )
 def upload_data_to_postgres_dag():
     """Upload data from the aws raw bucket to the analytics postgres table"""
-    yesterday = "{{ ds}}"
+    yesterday = "{{ logical_date }}"
 
     @task
     def download_aws_log():
