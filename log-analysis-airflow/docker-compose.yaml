@@ -230,6 +230,8 @@ services:
     restart: always
     ports:
       - "5438:5432"
+    volumes:
+      - data-db-volume:/var/lib/postgresql/data
     networks:
       airflow_network:
         ipv4_address: 172.20.0.20
@@ -273,4 +275,7 @@ networks:
         - subnet: 172.20.0.0/24
 
 volumes:
+  data-db-volume:
+    driver: local
   postgres-db-volume:
+    driver: local
