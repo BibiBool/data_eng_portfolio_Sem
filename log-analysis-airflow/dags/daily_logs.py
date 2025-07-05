@@ -11,7 +11,7 @@ import os
 @dag(
     dag_id="website_logs_generator",
     start_date=datetime(2025, 6, 25),
-    schedule="*/2 * * * *",
+    schedule="@daily",
     catchup=False,
     tags=["data_engineering", "junior_engineer_practice", "logs", "parquet"],
     render_template_as_native_obj=True,
@@ -20,7 +20,7 @@ def website_logs_generator_dag():
     # This DAG generates a daily Parquet file containing simulated website logs.
 
     @task
-    def generate_website_logs(num_entries: int = 100, execution_date_str : str = "{{ logical_date }}") -> str:
+    def generate_website_logs(num_entries: int = 1000, execution_date_str : str = "{{ logical_date }}") -> str:
         """
         Generates a specified number of synthetic website log entries
         with realistic and varied data.

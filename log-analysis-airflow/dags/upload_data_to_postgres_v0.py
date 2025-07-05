@@ -22,7 +22,7 @@ def upload_data_to_postgres_dag():
     """Upload data from the aws raw bucket to the analytics postgres table"""
 
     @task
-    def download_aws_log(execution_date_str : str = "{{ logical_date }}"):
+    def download_aws_log(execution_date_str : str = "{{ data_interval_end }}"):
         """Download the aws log file from the S3 bucket"""
         # **IMPLEMENT YOUR S3 DOWNLOAD LOGIC HERE**
         local_directory= "/opt/airflow/raw_data"
@@ -32,7 +32,7 @@ def upload_data_to_postgres_dag():
         return file_path
     
     @task
-    def clean_and_convert_logs(file_path: str, execution_date_str : str = "{{ logical_date }}"):
+    def clean_and_convert_logs(file_path: str, execution_date_str : str = "{{ data_interval_end }}"):
         print(os.listdir("/opt/airflow/raw_data"))
         print(f"Attempting to process file: {file_path}")
         if not os.path.exists(file_path):
@@ -62,7 +62,7 @@ def upload_data_to_postgres_dag():
 
         # Ensure you have registered your Postgres connection in Airflow with the ID 'postgres_default'
         pg_hook = PostgresHook(postgres_conn_id='postgres_default')
-        table_name = "raw_cdn_logs"
+        table_name = "cdn_logs"
 
         try:
             print(f"Initiating bulk upload to PostgreSQL table: {table_name}")
@@ -80,8 +80,8 @@ def upload_data_to_postgres_dag():
 
 
     # Define the task dependency and pass the output of download_aws_log
-    downloaded_file_path = download_aws_log(execution_date_str = "{{ logical_date.strftime('%Y-%m-%d')}}")
-    cleaned_logs = clean_and_convert_logs(file_path=downloaded_file_path, execution_date_str = "{{ logical_date.strftime('%Y-%m-%d')}}")
+    downloaded_file_path = download_aws_log(execution_date_str = "{{ data_interval_end.strftime('%Y-%m-%d')}}")
+    cleaned_logs = clean_and_convert_logs(file_path=downloaded_file_path, execution_date_str = "{{ data_interval_end.strftime('%Y-%m-%d')}}")
     upload_to_postgres(staging_area=cleaned_logs) 
 
 upload_data_to_postgres_dag()
