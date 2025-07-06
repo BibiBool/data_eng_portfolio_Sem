@@ -1,10 +1,10 @@
 from airflow.decorators import dag, task
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
 import psycopg2
-from psycopg2 import sql
 from utilities.convert_column import convert_dataframe_column_types
 import os
 
@@ -78,11 +78,17 @@ def upload_data_to_postgres_dag():
             print(f"Error during database upload: {e}")
             raise # Re-raise the exception to mark the Airflow task as failed
 
+    upsert_incremental_visits = SQLExecuteQueryOperator(
+        task_id="upsert_incremental_visits",
+        conn_id="postgres_default",
+        sql="sql/incremental_visits.sql",
+        )
+        
 
     # Define the task dependency and pass the output of download_aws_log
     downloaded_file_path = download_aws_log(execution_date_str = "{{ data_interval_end.strftime('%Y-%m-%d')}}")
     cleaned_logs = clean_and_convert_logs(file_path=downloaded_file_path, execution_date_str = "{{ data_interval_end.strftime('%Y-%m-%d')}}")
-    upload_to_postgres(staging_area=cleaned_logs) 
+    upload_to_postgres(staging_area=cleaned_logs) >> upsert_incremental_visits
 
 upload_data_to_postgres_dag()
              
