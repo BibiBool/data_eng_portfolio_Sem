@@ -1,0 +1,62 @@
+---
+layout: default
+title: Home - Data Engineer Portfolio
+---
+
+<div class="container">
+    <aside class="sidebar">
+        <div class="profile-box box-shadow border-radius">
+            <img src="{{ "/assets/images/profile.jpg" | relative_url }}" alt="Your Profile Picture" class="profile-pic">
+            <h2>Your Name</h2>
+            <p class="function">Data Engineer</p>
+            <div class="contact-info">
+                <h3>Contact Me</h3>
+                <ul>
+                    <li><strong>Email:</strong> <a href="mailto:{{ site.email }}">{{ site.email }}</a></li>
+                    <li><strong>LinkedIn:</strong> <a href="https://linkedin.com/in/{{ site.linkedin_username }}" target="_blank">{{ site.linkedin_username }}</a></li>
+                    <li><strong>GitHub:</strong> <a href="{{ site.github_username }}" target="_blank">{{ site.github_username }}</a></li>
+                    </ul>
+            </div>
+        </div>
+    </aside>
+
+    <div class="content-area">
+        <section id="about-me" class="box-shadow border-radius">
+            <h2>About Me</h2>
+            <p>I am a Data Engineer with a strong foundation in analytical thinking cultivated through my background as a Civil Engineer and 5 years of experience as a Project Management Officer. </p>
+            <p>I am passionate about the data world and most importantly, I like building robust data pipelines that will bring value to the Business.</p>
+
+            <h3>My Tech Stack</h3>
+            <ul>
+                <li><strong>Programming Languages:</strong> Python, SQL</li>
+                <li><strong>Databases:</strong> PostgreSQL, MongoDB, Redshift</li>
+                <li><strong>Cloud Platforms:</strong> AWS (S3, EC2, Lambda, Glue, EMR)</li>
+                <li><strong>Data Orchestration/ETL:</strong> Apache Airflow, dbt</li>
+                <li><strong>Big Data Technologies:</strong> Apache Spark, Apache Kafka</li>
+                <li><strong>Data Analytics:</strong> Pandas, Numpy, Matplotlib, Metabase</li>
+                <li><strong>Version Control:</strong> Git, GitHub</li>
+                <li><strong>Tools & Others:</strong> Docker, Terraform, Linux, Bash Scripting</li>
+            </ul>
+        </section>
+
+        <section id="my-projects" class="box-shadow border-radius">
+            <h2>My Projects</h2>
+            <div class="project-grid">
+                <div class="project-item border-radius">
+                    <a href="/projects/project-1.html">
+                        <img src="{{ "/assets/images/project-1-thumbnail.jpg" | relative_url }}" alt="Project 1 Thumbnail">
+                        <h3>Project Title 1</h3>
+                        <p>A brief description of Project 1, highlighting its key outcome or technology.</p>
+                    </a>
+                </div>
+                <div class="project-item border-radius">
+                    <a href="/projects/project-2.html">
+                        <img src="{{ "/assets/images/project-2-thumbnail.jpg" | relative_url }}" alt="Project 2 Thumbnail">
+                        <h3>Project Title 2</h3>
+                        <p>A brief description of Project 2, highlighting its key outcome or technology.</p>
+                    </a>
+                </div>
+                </div>
+        </section>
+    </div>
+</div>

@@ -1,0 +1,264 @@
+/* General Body Styles */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+/* Header and Navigation */
+header {
+    background: #333;
+    color: #fff;
+    padding: 1rem 0;
+    text-align: center;
+}
+
+nav a {
+    color: #fff;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+/* --- Global Main Content Wrapper (Applies to all pages using default layout) --- */
+.page-main-content {
+    padding: 20px; /* Adds consistent padding around the content block */
+    max-width: 1200px; /* Sets a maximum width for content */
+    margin: 20px auto; /* Centers the content block and provides vertical spacing */
+    /* Individual sections/boxes will now have their own background/shadow */
+}
+
+/* --- Layout Container (specifically for the homepage's two-column layout) --- */
+.container {
+    display: flex; /* Enables Flexbox for sidebar and content */
+    flex-wrap: wrap; /* Allows items to wrap on smaller screens */
+    gap: 20px; /* Space between sidebar and content */
+    /* No need for max-width or margin here, as .page-main-content handles it */
+}
+
+/* --- Sidebar Styles --- */
+.sidebar {
+    flex: 0 0 280px; /* Fixed width for sidebar, no shrinking/growing */
+    max-width: 100%; /* Allows it to take full width on smaller screens */
+}
+
+.profile-box {
+    padding: 20px;
+    background: #fff;
+    text-align: center;
+}
+
+.profile-pic {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%; /* Makes the image circular */
+    object-fit: cover; /* Ensures image covers the area without distortion */
+    margin-bottom: 15px;
+    border: 3px solid #007bff; /* Optional: adds a border around the pic */
+}
+
+.profile-box h2 {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.profile-box .function {
+    color: #666;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.contact-info ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.contact-info li {
+    margin-bottom: 10px;
+}
+
+.contact-info a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.contact-info a:hover {
+    text-decoration: underline;
+}
+
+/* --- Icons Spacing --- */
+.contact-info ul li i {
+    margin-right: 8px; /* Space between icon and text */
+    color: #007bff; /* Optional: style the icon color */
+}
+
+/* --- Content Area Styles (for homepage - takes remaining space) --- */
+.content-area {
+    flex: 1; /* Allows content area to take remaining space */
+    min-width: 0; /* Prevents content from overflowing */
+}
+
+/* Common Styles for all content boxes (Sections, Project Items) */
+.box-shadow {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.border-radius {
+    border-radius: 8px; /* Rounded corners */
+}
+
+section {
+    margin-bottom: 20px; /* Space between each section */
+    padding: 20px; /* Padding inside each section's box */
+    background: #fff; /* Individual sections have their own white background */
+}
+
+/* Ensures no extra margin at the bottom of the last section in a sequence */
+section:last-of-type {
+    margin-bottom: 0;
+}
+
+section h2 {
+    color: #0056b3;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* Project Grid */
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.project-item {
+    border: 1px solid #ddd;
+    padding: 15px;
+    text-align: center;
+    background: #f9f9f9;
+    transition: transform 0.2s;
+}
+
+.project-item:hover {
+    transform: translateY(-5px);
+}
+
+.project-item img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.project-item h3 {
+    margin: 10px 0;
+    color: #333;
+}
+
+.project-item p {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.project-item a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Resume Button */
+.button {
+    display: inline-block;
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-top: 10px;
+}
+
+.button:hover {
+    background-color: #0056b3;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 20px;
+    background: #333;
+    color: #fff;
+    margin-top: 40px;
+}
+
+/* --- Resume Page Specific Styles --- */
+.resume-intro {
+    font-size: 1.1em;
+    margin-bottom: 25px;
+    color: #555;
+    text-align: center;
+}
+
+.resume-section {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+.resume-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.resume-section h3 {
+    color: #007bff;
+    margin-bottom: 15px;
+}
+
+.resume-section h4 {
+    color: #333;
+    margin-top: 15px;
+    margin-bottom: 8px;
+    font-size: 1.1em;
+}
+
+.resume-section ul {
+    list-style: disc;
+    margin-left: 25px;
+    padding-left: 0;
+}
+
+.resume-section li {
+    margin-bottom: 8px;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .page-main-content {
+        padding: 10px; /* Reduce padding on small screens for better use of space */
+        margin: 10px auto; /* Reduce vertical margin on small screens */
+    }
+    .container {
+        flex-direction: column; /* Stack sidebar and content vertically */
+    }
+
+    .sidebar {
+        flex: none; /* Remove fixed width */
+        width: 100%; /* Take full width on small screens */
+        margin-bottom: 20px; /* Space between sidebar and content */
+    }
+
+    .profile-box {
+        border-radius: 8px; /* Ensure border-radius is applied on small screens too */
+    }
+}
