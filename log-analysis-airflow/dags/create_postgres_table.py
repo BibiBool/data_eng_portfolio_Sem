@@ -9,7 +9,7 @@ import os
         "owner": "sem",
         "start_date": datetime(2024, 4, 5)
     },
-    schedule_interval="@once",
+    schedule="@once",
     catchup=False,
     tags=["data_engineering", "junior_engineer_practice", "logs", "parquet"]
 )

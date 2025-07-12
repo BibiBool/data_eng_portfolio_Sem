@@ -14,7 +14,7 @@ import os
         "owner": "sem",
         "start_date": datetime(2025, 6, 25)
     },
-    schedule_interval="0 3 * * *",
+    schedule="0 3 * * *",
     catchup=False,
     tags=["data_engineering", "junior_engineer_practice", "logs", "parquet"]
 )

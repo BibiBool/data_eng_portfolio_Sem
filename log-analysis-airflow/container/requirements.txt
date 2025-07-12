@@ -1,0 +1,10 @@
+apache-airflow==3.0.2
+apache-airflow-providers-standard # For BashOperator, PythonOperator, etc.
+apache-airflow-providers-postgres # For PostgreSQL connection and operators
+apache-airflow-providers-amazon # For boto3 and AWS integrations
+psycopg2-binary
+pandas
+numpy
+faker
+boto3
+pyarrow
