@@ -1,0 +1,1 @@
+SELECT * FROM cdn_logs LIMIT 5

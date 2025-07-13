@@ -16,7 +16,7 @@ def convert_dataframe_column_types(df: pd.DataFrame) -> pd.DataFrame:
     # Note: 'VARCHAR(255)' and 'TEXT' generally map to object/string in pandas.
     # We'll explicitly convert where necessary (e.g., to integers, floats, and datetimes).
     type_mapping = {
-        'date': str,   # Keep as string for now, could convert to datetime later
+        'timestamp': 'datetime64[ns]',   # Keep as string for now, could convert to datetime later
         'time': str,   # Keep as string for now, could convert to datetime later
         'x_edge_location': str,
         'sc_bytes': 'Int64',

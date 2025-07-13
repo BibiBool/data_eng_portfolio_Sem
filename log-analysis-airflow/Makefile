@@ -1,7 +1,7 @@
 COMPOSE_FILE := docker-compose.yaml
 
 perms:
-	sudo mkdir -p logs plugins dags raw_data clean_data data-db-volume && sudo chmod -R u=rwx,g=rwx,o=rwx logs plugins dags raw_data clean_data 
+	sudo mkdir -p logs plugins dags raw_data clean_data data-db-volume config && sudo chmod -R u=rwx,g=rwx,o=rwx logs plugins dags raw_data clean_data config
 
 docker-spin-up:
 	@echo "Initializing Airflow and spinning up Docker services..."
@@ -15,6 +15,16 @@ down:
 
 clean: 
 	@echo "Cleaning up Docker containers and networks..."
-	docker compose -f $(COMPOSE_FILE) down --remove-orphans
+	docker compose down --remove-orphans
 
-.PHONY: up down clean docker-spin-up perms
+fresh-start:
+	@echo "Cleaning up all Docker resources..."
+	# Stop and remove containers, networks, and named volumes
+	docker compose -f $(COMPOSE_FILE) down --volumes --rmi all
+	# Prune any dangling volumes not removed by down --volumes
+	docker volume prune -f
+	# Prune any unused networks
+	docker network prune -f
+	@echo "Docker cleanup complete."
+
+.PHONY: up down clean docker-spin-up perms clean-docker

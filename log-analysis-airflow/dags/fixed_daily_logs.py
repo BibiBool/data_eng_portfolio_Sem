@@ -25,14 +25,14 @@ def website_fixed_day_logs_generator_dag():
     # This DAG generates a daily Parquet file containing simulated website logs.
 
     @task
-    def generate_website_logs(num_entries: int = 1000, execution_date_str : str = "{{ logical_date }}") -> str:
+    def generate_website_logs(num_entries: int = random.randrange(352, 1000), execution_date_str : str = "{{ logical_date }}") -> str:
         """
         Generates a specified number of synthetic website log entries
         with realistic and varied data.
         """
 
         # Determine the date for log generation (yesterday's date relative to DAG run)
-        log_date = "2025-07-01"
+        log_date = "2025-07-04"
 
         fake = Faker()
         logs_data = []
@@ -116,8 +116,7 @@ def website_fixed_day_logs_generator_dag():
 
         output_filepath = None # Initialize to None in case of error before assignment
         try:
-            output_directory = "/opt/airflow/raw_data" 
-            # output_directory = "/home/sem/data-portfolio/log-analysis-airflow"
+            output_directory = "/opt/airflow/raw_data"
             output_filename = f"website_logs_{log_date}.parquet"
             output_filepath = os.path.join(output_directory, output_filename)
 
@@ -148,10 +147,17 @@ def website_fixed_day_logs_generator_dag():
 
         logs_df = pd.read_parquet(file_path)
         print(f"DataFrame shape: {logs_df.shape}")
+        print(f"Dataframe colums from parquet files: {logs_df.columns} ")
 
         staging_area = f"/opt/airflow/raw_data/website_logs_staged_{execution_date_str}.csv"
         logs_df.columns = [col.lower() for col in logs_df.columns]
         logs_df = logs_df.replace("-", np.nan)
+
+        logs_df['timestamp'] = pd.to_datetime(logs_df['date'] + ' ' + logs_df['time'], errors='raise')
+        logs_df= logs_df.drop(columns=['date', 'time'])
+
+        logs_df = logs_df.drop_duplicates(subset=['timestamp', 'x_edge_request_id', 'c_ip'])
+
         clean_logs_df = convert_dataframe_column_types(logs_df)
         clean_logs_df.to_csv(staging_area, index=False)
 
@@ -185,6 +191,7 @@ def website_fixed_day_logs_generator_dag():
             print(f"Error during database upload: {e}")
             raise
 
+    
     # Task dependencies
     log_file_path = generate_website_logs(execution_date_str="{{ logical_date.strftime('%Y-%m-%d') }}")
     cleaned_logs = clean_and_convert_logs(file_path=log_file_path)
