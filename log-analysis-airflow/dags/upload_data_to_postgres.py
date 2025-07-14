@@ -78,7 +78,6 @@ def upload_data_to_postgres_dag():
             print(f"Error during database upload: {e}")
             raise # Re-raise the exception to mark the Airflow task as failed
 
-    # TO-DO: create incremental sql script
     upsert_incremental_visits = SQLExecuteQueryOperator(
         task_id="upsert_incremental_visits",
         conn_id="postgres_default",
@@ -92,4 +91,3 @@ def upload_data_to_postgres_dag():
     upload_to_postgres(staging_area=cleaned_logs) >> upsert_incremental_visits
 
 upload_data_to_postgres_dag()
-             

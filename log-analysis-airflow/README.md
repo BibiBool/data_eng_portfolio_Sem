@@ -20,10 +20,5 @@ The primary objectives of this project are to demonstrate and practice:
 We will answer three questions from the Business:
 
 1. What are the most popular content or pages on our site, and how has their popularity changed over time?
-2. What is the distribution of client access by geographic location (approximated by edge location), and what are the peak access times for different regions?
-3. How is our service performing in terms of response times and error rates, and are there specific request types or client behaviors contributing to performance issues?
-
-## TO DO
-
-1. Update the sql script for cdn_logs table creation to have date, time and c_ip as primary keys.
-2. Group date and time columns into one column with type timestamp.
+2. What is the distribution of client access by geographic location (approximated by edge location), and what are the peak access times for different regions? (to do)
+3. How is our service performing in terms of response times and error rates, and are there specific request types or client behaviors contributing to performance issues? (to do)

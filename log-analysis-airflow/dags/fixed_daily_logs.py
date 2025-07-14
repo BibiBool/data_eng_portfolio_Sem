@@ -9,6 +9,7 @@ import psycopg2
 from faker import Faker
 from airflow.decorators import dag, task
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from utilities.convert_column import convert_dataframe_column_types
 
 import os
@@ -25,14 +26,14 @@ def website_fixed_day_logs_generator_dag():
     # This DAG generates a daily Parquet file containing simulated website logs.
 
     @task
-    def generate_website_logs(num_entries: int = random.randrange(352, 1000), execution_date_str : str = "{{ logical_date }}") -> str:
+    def generate_website_logs(num_entries: int = random.randrange(1001, 5000), execution_date_str : str = "{{ logical_date }}") -> str:
         """
         Generates a specified number of synthetic website log entries
         with realistic and varied data.
         """
 
         # Determine the date for log generation (yesterday's date relative to DAG run)
-        log_date = "2025-07-04"
+        log_date = execution_date_str
 
         fake = Faker()
         logs_data = []
@@ -69,6 +70,65 @@ def website_fixed_day_logs_generator_dag():
         x_edge_detailed_result_types = ["Hit", "Miss", "Error", "LambdaExecutionError", "BadGateway"]
         sc_content_types = ["text/html", "application/json", "image/jpeg", "text/css", "application/javascript"]
 
+           # --- Start of new/modified code for cs_uri_stem ---
+        data_engineering_uri_stems = [
+        "/blog/what-is-data-engineering",
+        "/blog/etl-vs-elt-difference",
+        "/blog/apache-spark-beginners-guide",
+        "/blog/data-lakes-vs-data-warehouses",
+        "/blog/introduction-to-airflow-dags",
+        "/blog/building-data-pipelines-python",
+        "/blog/real-time-data-streaming-kafka",
+        "/blog/data-governance-best-practices",
+        "/blog/cloud-data-platforms-aws-azure-gcp",
+        "/blog/data-modeling-techniques-data-engineers",
+        "/blog/scalable-data-architecture",
+        "/blog/monitoring-data-pipelines",
+        "/blog/data-quality-checks-etl",
+        "/blog/data-security-encryption",
+        "/blog/data-versioning-lakehouse",
+        "/blog/containerization-docker-kubernetes-data",
+        "/blog/dataops-principles-practice",
+        "/blog/machine-learning-ops-mldata",
+        "/blog/graph-databases-data-engineering",
+        "/blog/time-series-data-processing",
+        "/blog/serverless-data-processing",
+        "/blog/data-mesh-architecture",
+        "/blog/streaming-etl-flink-spark-streaming",
+        "/blog/data-catalog-importance",
+        "/blog/metadata-management-data-lakes",
+        "/blog/data-observability-tools",
+        "/blog/data-lineage-tracking",
+        "/blog/data-lake-security-best-practices",
+        "/blog/modern-data-stack-components",
+        "/blog/data-virtualization-use-cases",
+        "/blog/data-marts-data-warehousing",
+        "/blog/data-integration-strategies",
+        "/blog/delta-lake-apache-iceberg",
+        "/blog/data-pipeline-orchestration-tools",
+        "/blog/cost-optimization-cloud-data",
+        "/blog/data-governance-frameworks",
+        "/blog/change-data-capture-cdc",
+        "/blog/data-transformation-techniques",
+        "/blog/choosing-right-database",
+        "/blog/data-storage-solutions",
+        "/blog/api-integration-data-pipelines",
+        "/blog/data-quality-metrics",
+        "/blog/building-api-gateways-data",
+        "/blog/distributed-computing-data",
+        "/blog/data-privacy-regulations-gdpr",
+        "/blog/columnar-databases-analytics",
+        "/blog/nosql-databases-data-engineering",
+        "/blog/data-vault-modeling",
+        "/blog/streaming-analytics-applications",
+        "/blog/realtime-dashboards-data",
+        "/about",
+        "/blog",
+        "/blog/search",
+        "/blog/category",
+    ]
+    # --- End of new/modified code for cs_uri_stem ---
+
         print("Generating log entries...")
         for i in range(num_entries):
             # Generate time for yesterday
@@ -82,7 +142,7 @@ def website_fixed_day_logs_generator_dag():
                 "c_ip": ip_pool[i], # Assign pre-generated IP
                 "cs_method": random.choice(http_methods),
                 "cs_Host": "d8bnainxtot1t.cloudfront.net",
-                "cs_uri_stem": fake.uri_path(),
+                "cs_uri_stem": random.choice(data_engineering_uri_stems),
                 "sc_status": random.choice(sc_statuses),
                 "cs_Referer": fake.uri() if random.random() > 0.1 else "-", # 90% chance of referrer
                 "cs_User_Agent": fake.user_agent(),
@@ -191,10 +251,15 @@ def website_fixed_day_logs_generator_dag():
             print(f"Error during database upload: {e}")
             raise
 
+    upsert_incremental_visits = SQLExecuteQueryOperator(
+        task_id="upsert_incremental_visits",
+        conn_id="postgres_default",
+        sql="sql/incremental_visits.sql",
+        )
     
     # Task dependencies
     log_file_path = generate_website_logs(execution_date_str="{{ logical_date.strftime('%Y-%m-%d') }}")
     cleaned_logs = clean_and_convert_logs(file_path=log_file_path)
-    upload_to_postgres(staging_area=cleaned_logs)
+    upload_to_postgres(staging_area=cleaned_logs) >> upsert_incremental_visits
 
 website_fixed_day_logs_generator_dag()
