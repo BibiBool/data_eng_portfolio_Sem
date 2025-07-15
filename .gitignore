@@ -160,7 +160,7 @@ cloudwatch-log-analysis-airflow/plugins
 cloudwatch-log-analysis-airflow/raw_data
 cloudwatch-log-analysis-airflow/clean_data
 cloudwatch-log-analysis-airflow/config/
-
+vn
 v2.txt
 # Spyder project settings
 .spyderproject
