@@ -1,6 +1,7 @@
 from airflow.decorators import dag, task
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from datetime import datetime, timedelta
 import pandas as pd
 import numpy as np
@@ -25,6 +26,9 @@ def upload_data_to_postgres_dag():
     def download_aws_log(execution_date_str : str = "{{ data_interval_end }}"):
         """Download the aws log file from the S3 bucket"""
         # **IMPLEMENT YOUR S3 DOWNLOAD LOGIC HERE**
+        S3_BUCKET_NAME="archives-nationales-logs"
+        S3_BASE_PREFIX="/AWSLogs/713881793976/CloudFront/E4ZNTW6XOW5DN."
+
         local_directory= "/opt/airflow/raw_data"
         local_filename = f"website_logs_{execution_date_str}.parquet"
         file_path = os.path.join(local_directory, local_filename)
