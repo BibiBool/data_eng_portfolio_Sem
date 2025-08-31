@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np 
 import psycopg2 
 from faker import Faker
-from airflow.decorators import dag, task
+from airflow.sdk import dag, task
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from utilities.convert_column import convert_dataframe_column_types
@@ -19,6 +19,7 @@ import os
     start_date=datetime(2025, 6, 25),
     schedule="@daily",
     catchup=False,
+    max_consecutive_failed_dag_runs=3,
     tags=["data_engineering", "junior_engineer_practice", "logs", "parquet"],
     render_template_as_native_obj=True,
 )

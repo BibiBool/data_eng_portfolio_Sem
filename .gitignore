@@ -138,10 +138,12 @@ env.bak/
 venv.bak/
 
 # Fake logs
-fake-log-analysis/logs/
-fake-log-analysis/plugins
-fake-log-analysis/raw_data/
-fake-log-analysis/clean_data/
+cloudwatch-log-analysis/logs/
+cloudwatch-log-analysis/plugins
+cloudwatch-log-analysis/raw_data/
+cloudwatch-log-analysis/clean_data/
+cloudwatch-log-analysis/config/
+
 fake-log-analysis-airflow/consolidated_data
 fake-log-analysis-airflow/logs
 fake-log-analysis-airflow/plugins
@@ -149,18 +151,6 @@ fake-log-analysis-airflow/raw_data
 fake-log-analysis-airflow/clean_data
 fake-log-analysis-airflow/config/
 
-# Clouwatch logs
-cloudwatch-log-analysis/logs/
-cloudwatch-log-analysis/plugins
-cloudwatch-log-analysis/raw_data/
-cloudwatch-log-analysis/clean_data/
-cloudwatch-log-analysis-airflow/consolidated_data
-cloudwatch-log-analysis-airflow/logs
-cloudwatch-log-analysis-airflow/plugins
-cloudwatch-log-analysis-airflow/raw_data
-cloudwatch-log-analysis-airflow/clean_data
-cloudwatch-log-analysis-airflow/config/
-vn
 v2.txt
 # Spyder project settings
 .spyderproject
