@@ -13,6 +13,10 @@ import logging
 import re 
 
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
+from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
+
+
 
 # Basic logging
 log = logging.getLogger(__name__)
@@ -42,7 +46,7 @@ def task_failure_alert():
     }
 )
 
-def s3_log_processing_pipeline_v4():
+def s3_log_processing_pipeline_v6():
     """
     ### Cloudfrot Log Processor
     This DAG processes the logs frmo s3
@@ -213,26 +217,66 @@ def s3_log_processing_pipeline_v4():
 
         logs_df = pd.read_parquet(parquet_files)
         log.info(f"DataFrame shape: {logs_df.shape}")
+        log.info(f"Columns to be cleaned: {logs_df.columns}")
 
         staging_area = f"/opt/airflow/raw_data/website_logs_staged_{execution_date_str}.csv"
         logs_df.columns = [col.lower() for col in logs_df.columns]
         logs_df = logs_df.replace("-", np.nan)
+
+        logs_df['timestamp'] = pd.to_datetime(logs_df['date'] + ' ' + logs_df['time'], errors='raise')
+        logs_df= logs_df.drop(columns=['date', 'time'])
+
+        logs_df = logs_df.drop_duplicates(subset=['timestamp', 'x_edge_request_id', 'c_ip'])
         clean_logs_df = convert_dataframe_column_types(logs_df)
         clean_logs_df.to_csv(staging_area, index=False)
 
         log.info(f"Cleaned columns: {clean_logs_df.columns}")
-        return local_dir_path
+        return staging_area
 
+    @task    
+    def upload_to_postgres(staging_area):
+        print(f"Attempting to process file: {staging_area}")
+        if not os.path.exists(staging_area):
+            raise FileNotFoundError(f"File not found at path: {staging_area}")
+        print(f"File found at: {staging_area}")
 
-    @task()
-    def _clean_temp_folders(local_dir_path: str):
+        clean_logs_df = pd.read_csv(staging_area)
+
+        # Ensure you have registered your Postgres connection in Airflow with the ID 'postgres_default'
+        pg_hook = PostgresHook(postgres_conn_id='postgres_default')
+        table_name = "cdn_logs"
+
+        try:
+            print(f"Initiating bulk upload to PostgreSQL table: {table_name}")
+            clean_logs_df.to_sql(
+                name=table_name,
+                con=pg_hook.get_sqlalchemy_engine(),
+                if_exists='append',
+                index=False
+            )
+            print(f"{len(clean_logs_df)} rows successfully inserted into the {table_name} table.")
+
+        except psycopg2.Error as e:
+            print(f"Error during database upload: {e}")
+            raise
+
+        return staging_area
+
+    upsert_incremental_visits = SQLExecuteQueryOperator(
+        task_id="upsert_incremental_visits",
+        conn_id="postgres_default",
+        sql="sql/incremental_visits.sql",
+        )
+
+    @task(trigger_rule="always")
+    def _clean_temp_folders(staging_area: str):
         """Clean all temporary folders."""
 
         try:
-            if os.path.exists(local_dir_path):
+            if os.path.exists(staging_area):
                 time.sleep(10)
-                shutil.rmtree(local_dir_path)
-                log.info(f"Cleaned up local intermediate JSON folder and files: {local_dir_path}")
+                shutil.rmtree(staging_area)
+                log.info(f"Cleaned up local intermediate JSON folder and files: {staging_area}")
         
         except Exception as e:
             log.error("An error occured while erasing temporary folders.")
@@ -253,15 +297,24 @@ def s3_log_processing_pipeline_v4():
         source_bucket_name=S3_BUCKET_NAME
     )
 
-    process_logs = clean_and_convert_logs(local_dir_path=donwlaod_logs)
+    process_logs = clean_and_convert_logs(
+        local_dir_path=donwlaod_logs, 
+        execution_date_str="{{ logical_date.strftime('%Y-%m-%d') }}"
+        )
+    
+    send_to_postgres = upload_to_postgres(
+        staging_area=process_logs
+    )
 
     clean_temp_folders = _clean_temp_folders(
-        local_dir_path=process_logs)
+        staging_area=process_logs)
 
 
-    list_s3_daily_log >> donwlaod_logs >> process_logs >> clean_temp_folders
+    list_s3_daily_log >> donwlaod_logs >> process_logs >> send_to_postgres >> upsert_incremental_visits 
+    process_logs >> clean_temp_folders
 
-s3_log_processing_pipeline_v4()
+s3_log_processing_pipeline_v6()
 
 
-      
+if __name__ == "__main__":
+    dag.test()      
