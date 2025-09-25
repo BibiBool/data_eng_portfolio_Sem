@@ -136,6 +136,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+olist_data
 
 # Fake logs
 cloudwatch-log-analysis/logs/
