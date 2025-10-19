@@ -1,6 +1,7 @@
 # E-Commerce Data Pipeline - Design Document
 
 ## 1. Architecture Overview
+
 The pipeline ingests both **batch data** (historical e-commerce tables) and **streaming data** (real-time orders).  
 
 - **Postgres** stores raw and curated data.  
@@ -56,7 +57,6 @@ Airflow triggers a Spark batch job daily.
 
 Spark reads from Postgres → cleans/transforms → writes back curated tables.
 
-
 ### Streaming Ingestion
 
 A Kafka producer simulates new orders (e.g., Faker Python script).
@@ -64,7 +64,6 @@ A Kafka producer simulates new orders (e.g., Faker Python script).
 Spark Structured Streaming consumes the events from Kafka.
 
 Streaming jobs enrich/clean the data and persist into Postgres in near real-time.
-
 
 ### Analytics & Visualization
 
@@ -81,6 +80,7 @@ Orders per customer segment
 Real-time order inflow
 
 ## 4. Component Design
+
 Postgres
 
 Stores raw tables (customers, products, orders) and curated tables (fact_orders, dim_customers, dim_products).
@@ -119,7 +119,6 @@ Provides BI dashboards for analysts.
 
 Reads only curated tables, not raw data.
 
-
 ## 5. Design Decisions
 
 **Why Postgres for both OLTP and OLAP (MVP)?**
@@ -133,7 +132,6 @@ Provides reproducibility, retries, and dependency management.
 
 **Why Kafka for streaming simulation?**
 Prepares us for real-world event-driven pipelines (IoT, logs, transactions).
-
 
 ## 6. Future Improvements
 
