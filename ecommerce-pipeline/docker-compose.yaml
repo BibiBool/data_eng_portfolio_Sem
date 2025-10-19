@@ -15,7 +15,22 @@ services:
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
       - ./postgres/seed_olist.sql:/docker-entrypoint-initdb.d/seed_olist.sql
     networks:
-      - ecommerce_net
+      ecommerce_net:
+        ipv4_address: 172.20.0.23
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      ecommerce_net:
+        ipv4_address: 172.20.0.24
 
   metabase:
     image: metabase/metabase:latest
@@ -33,6 +48,9 @@ services:
 
 networks:
   ecommerce_net:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
 
 volumes:
   postgres_data:
