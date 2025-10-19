@@ -137,6 +137,8 @@ ENV/
 env.bak/
 venv.bak/
 olist_data
+*.log
+logs/*
 
 # Fake logs
 cloudwatch-log-analysis/logs/
@@ -151,6 +153,9 @@ fake-log-analysis-airflow/plugins
 fake-log-analysis-airflow/raw_data
 fake-log-analysis-airflow/clean_data
 fake-log-analysis-airflow/config/
+
+ecommerce-pipeline/config
+ecommerce-pipeline/config
 
 v2.txt
 # Spyder project settings

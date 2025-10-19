@@ -1,30 +1,20 @@
-PROJECT_NAME = ecommerce-pipeline
+.PHONY: docker-spin-up perms up down restatr sh
 
-# Named volumes from docker-compose.yml
-VOLUMES = postgres_data metabase_data
+####################################################################################################################
+# Setup containers to run Airflow
 
-.PHONY: help up down clean volumes logs
+docker-spin-up:
+	docker compose up airflow-init && docker compose up --build -d
 
-help: ## Show available make commands
-	@echo "Available commands:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
+perms:
+	sudo mkdir -p logs plugins dags tests migrations && sudo chmod -R u=rwx,g=rwx,o=rwx logs plugins dags tests migrations
 
-up: ## Start all containers
-	docker-compose up -d
+up: perms docker-spin-up 
 
-down: ## Stop and remove containers
-	docker-compose down
+down:
+	docker compose down --volumes --rmi all
 
-volumes: ## Create named volumes manually
-	@for v in $(VOLUMES); do \
-		docker volume create $(PROJECT_NAME)_$$v; \
-	done
+restart: down up
 
-clean: ## Remove containers, networks, and volumes
-	docker-compose down -v --remove-orphans
-	@for v in $(VOLUMES); do \
-		docker volume rm -f $(PROJECT_NAME)_$$v || true; \
-	done
-
-logs: ## Tail logs
-	docker-compose logs -f
+sh:
+	docker exec -ti webserver bash
