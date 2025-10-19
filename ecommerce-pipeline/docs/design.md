@@ -48,7 +48,7 @@ flowchart LR
 
 ## 3. Data Flow Description
 
-Batch Ingestion
+### Batch Ingestion
 
 Historical e-commerce data is seeded into Postgres.
 
@@ -56,7 +56,8 @@ Airflow triggers a Spark batch job daily.
 
 Spark reads from Postgres → cleans/transforms → writes back curated tables.
 
-Streaming Ingestion
+
+### Streaming Ingestion
 
 A Kafka producer simulates new orders (e.g., Faker Python script).
 
@@ -64,7 +65,8 @@ Spark Structured Streaming consumes the events from Kafka.
 
 Streaming jobs enrich/clean the data and persist into Postgres in near real-time.
 
-Analytics & Visualization
+
+### Analytics & Visualization
 
 Metabase connects directly to curated Postgres tables.
 
@@ -120,16 +122,16 @@ Reads only curated tables, not raw data.
 
 ## 5. Design Decisions
 
-Why Postgres for both OLTP and OLAP (MVP)?
+**Why Postgres for both OLTP and OLAP (MVP)?**
 Simplicity: one database to manage. For scalability, we’d later add a data warehouse (Snowflake, BigQuery, Redshift).
 
-Why Spark over Pandas?
+**Why Spark over Pandas?**
 Ensures scalability to millions of rows, even if MVP runs on small datasets.
 
-Why Airflow instead of Cron?
+**Why Airflow instead of Cron?**
 Provides reproducibility, retries, and dependency management.
 
-Why Kafka for streaming simulation?
+**Why Kafka for streaming simulation?**
 Prepares us for real-world event-driven pipelines (IoT, logs, transactions).
 
 
