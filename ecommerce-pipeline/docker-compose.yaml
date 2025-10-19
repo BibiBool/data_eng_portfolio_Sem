@@ -1,9 +1,182 @@
 version: "3.9"
 
+x-airflow-common:
+  &airflow-common
+  build: ./containers/airflow
+  environment:
+    &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DATABASE_USER}:${AIRFLOW_DATABASE_PASSWORD}@${AIRFLOW_DATABASE_HOST}/airflow
+    AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://${AIRFLOW_DATABASE_USER}:${AIRFLOW_DATABASE_PASSWORD}@${AIRFLOW_DATABASE_HOST}/airflow
+    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__CORE__EXECUTION_API_SERVER_URL: 'http://airflow-apiserver:8080/execution/'
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+    AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
+    AIRFLOW_DATABASE_DBNAME: ${AIRFLOW_DATABASE_DBNAME}
+    AIRFLOW_DATABASE_USER: ${AIRFLOW_DATABASE_USER}
+    AIRFLOW_DATABASE_PASSWORD: ${AIRFLOW_DATABASE_PASSWORD}
+    AIRFLOW_DATABASE_HOST: ${AIRFLOW_DATABASE_HOST}
+
+    # DATA_DB CREDENTIALS
+    DATA_DB_DBNAME: ${DATA_DB_DBNAME}
+    DATA_DB_USER: ${DATA_DB_USER}
+    DATA_DB_PASSWORD: ${DATA_DB_PASSWORD}
+    DATA_DB_HOST: ${DATA_DB_HOST}
+
+  volumes:
+    - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
+    - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
+    - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
+    - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
+    - ${AIRFLOW_PROJ_DIR:-.}/olist_data:/opt/airflow/olist_data
+  user: "${AIRFLOW_UID:-50000}:0"
+  depends_on:
+    &airflow-common-depends-on
+    airflow-database:
+      condition: service_healthy
+  networks:
+    ecommerce_net:
+
 services:
-  postgres:
+  airflow-database:
+    container_name: airflow-db-container
     image: postgres:15
-    container_name: postgres
+    environment:
+      POSTGRES_USER: ${DATA_DB_USER}
+      POSTGRES_PASSWORD: ${AIRFLOW_DATABASE_PASSWORD}
+      POSTGRES_DB: ${AIRFLOW_DATABASE_DBNAME}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "airflow"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: always
+    ports:
+      - "5438:5432"
+    networks:
+      ecommerce_net:
+
+  airflow-apiserver:
+    <<: *airflow-common
+    command: api-server
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/version"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: always
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
+    networks:
+      ecommerce_net:
+
+
+  airflow-scheduler:
+    <<: *airflow-common
+    command: scheduler
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: always
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
+    networks:
+      ecommerce_net:
+
+  airflow-dag-processor:
+    <<: *airflow-common
+    command: dag-processor
+    healthcheck:
+      test: ["CMD-SHELL", 'airflow jobs check --job-type DagProcessorJob --hostname "$${HOSTNAME}"']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: always
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
+    networks:
+      ecommerce_net:
+
+  airflow-triggerer:
+    <<: *airflow-common
+    command: triggerer
+    healthcheck:
+      test: ["CMD-SHELL", 'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: always
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
+    networks:
+      ecommerce_net:
+
+  airflow-init:
+    <<: *airflow-common
+    entrypoint: /bin/bash
+    # yamllint disable rule:line-length
+    command:
+      - -c
+      - |
+        if [[ -z "${AIRFLOW_UID}" ]]; then
+          echo
+          echo -e "\033[1;33mWARNING!!!: AIRFLOW_UID not set!\e[0m"
+        fi
+        mkdir -p /opts/airflow/{logs,dags,plugins,config}
+        chown -R "${AIRFLOW_UID}:0" /opt/airflow/{logs,dags,plugins,config}
+        exec /entrypoint airflow version
+
+
+    environment:
+      <<: *airflow-common-env
+      _AIRFLOW_DB_MIGRATE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
+      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
+      _PIP_ADDITIONAL_REQUIREMENTS: ''
+    user: "0:0"
+    networks:
+      ecommerce_net:
+
+  airflow-cli:
+    <<: *airflow-common
+    profiles:
+      - debug
+    environment:
+      <<: *airflow-common-env
+      CONNECTION_CHECK_MAX_COUNT: "0"
+    command:
+      - bash
+      - -c
+      - airflow
+    depends_on:
+      <<: *airflow-common-depends-on
+    networks:
+      ecommerce_net:
+
+#Database with cleaned data for analysis
+  postgres-analytics:
+    image: postgres:15
+    container_name: postgres-analytics
     environment:
       POSTGRES_USER: airflow
       POSTGRES_PASSWORD: airflow
@@ -27,7 +200,7 @@ services:
     ports:
       - "5050:80"
     depends_on:
-      - postgres
+      - postgres-analytics
     networks:
       ecommerce_net:
         ipv4_address: 172.20.0.24
@@ -42,7 +215,7 @@ services:
     volumes:
       - metabase_data:/metabase-data
     depends_on:
-      - postgres
+      - postgres-analytics
     networks:
       - ecommerce_net
 
