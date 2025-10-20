@@ -1,4 +1,4 @@
-.PHONY: docker-spin-up perms up down restatr sh
+.PHONY: docker-spin-up wait-for-webserver perms up down restatr sh
 
 ####################################################################################################################
 # Environment Setup: Default to .env.dev if ENV_FILE is not specified
@@ -6,6 +6,9 @@ ENV_FILE ?= .env.dev
 
 docker-spin-up:
 	docker compose --env-file $(ENV_FILE) up airflow-init && docker compose --env-file $(ENV_FILE) up --build -d
+
+wait-for webserver:
+	docker compose wait webserver
 
 perms:
 	sudo mkdir -p logs plugins dags tests migrations && sudo chmod -R u=rwx,g=rwx,o=rwx logs plugins dags tests migrations
