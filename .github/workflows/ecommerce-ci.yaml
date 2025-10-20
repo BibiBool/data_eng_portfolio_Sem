@@ -21,8 +21,8 @@ jobs:
             - name: Spin up containers
               run: make up ENV_FILE=.env.dev
 
-            - name: Wait for Airflow Webserver to be healthy
-              run: make wait-for-webserver
+            - name: Wait for Airflow scheduler to be healthy
+              run: make wait-for-scheduler
 
             - name: Run CI test
               run: make ci
