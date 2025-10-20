@@ -1,10 +1,11 @@
 .PHONY: docker-spin-up perms up down restatr sh
 
 ####################################################################################################################
-# Setup containers to run Airflow
+# Environment Setup: Default to .env.dev if ENV_FILE is not specified
+ENV_FILE ?= .env.dev
 
 docker-spin-up:
-	docker compose up airflow-init && docker compose up --build -d
+	docker compose --env-file $(ENV_FILE) up airflow-init && docker compose --env-file $(ENV_FILE) up --build -d
 
 perms:
 	sudo mkdir -p logs plugins dags tests migrations && sudo chmod -R u=rwx,g=rwx,o=rwx logs plugins dags tests migrations

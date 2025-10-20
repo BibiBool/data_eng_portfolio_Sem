@@ -19,7 +19,7 @@ jobs:
               uses: docker/setup-buildx-action@v2
 
             - name: Spin up containers
-              run: make up
+              run: make up ENV_FILE=.env.dev
 
             - name: Run CI test
               run: make ci
