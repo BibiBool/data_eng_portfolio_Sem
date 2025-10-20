@@ -156,7 +156,8 @@ fake-log-analysis-airflow/config/
 
 ecommerce-pipeline/config
 ecommerce-pipeline/config
-
+**/olist_env
+**/logs
 v2.txt
 # Spyder project settings
 .spyderproject
