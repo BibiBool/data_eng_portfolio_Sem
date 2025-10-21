@@ -8,7 +8,11 @@ docker-spin-up:
 	docker compose --env-file $(ENV_FILE) up airflow-init && docker compose --env-file $(ENV_FILE) up --build -d
 
 wait-for-scheduler:
-	docker compose wait airflow-scheduler
+	@echo "Waiting for all Airflow services to be healthy..."
+	until docker compose --env-file $(ENV_FILE) ps | grep -E 'commerce-pipeline-airflow-scheduler-1' | grep '(healthy)' | wc -l | grep -q 1; do \
+		echo -n "."; sleep 5; \
+	done
+	@echo "All Airflow services are healthy!"
 
 perms:
 	sudo mkdir -p logs plugins dags tests migrations && sudo chmod -R u=rwx,g=rwx,o=rwx logs plugins dags tests migrations
@@ -27,9 +31,9 @@ sh:
 # Testing, auto formatting, type checks, & Lint checks
 
 isort:
-	docker compose exec -T airflow-cli isort .
+	docker compose exec -T airflow-scheduler isort .
 
 lint: 
-	docker compose exec -T airflow-cli flake8 /opt/airflow/dags
+	docker compose exec -T airflow-scheduler flake8 /opt/airflow/dags
 
 ci: isort lint

@@ -1,7 +1,9 @@
 # Batch csv pipeline that runs daily
-from airflow.sdk import dag, task
 from datetime import datetime, timedelta
+
 import polars as pl
+from airflow.sdk import dag, task
+
 
 @dag(
     start_date=datetime(2025, 10, 19),
