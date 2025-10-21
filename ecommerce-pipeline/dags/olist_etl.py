@@ -15,9 +15,10 @@ def olist_etl():
 
     @task
     def fetch_products_category():
-        products_category_df = pl.read_csv("olist_data/olist_sellers_dataset.csv")
+        products_category_df = pl.read_csv(
+            "olist_data/olist_sellers_dataset.csv")
         return products_category_df
-    
+
     @task
     def print_products_category(print_products_category_df):
         print(print_products_category_df.head())
