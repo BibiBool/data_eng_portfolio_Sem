@@ -1,5 +1,5 @@
 # Batch csv pipeline that runs daily
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import polars as pl
 from airflow.sdk import dag, task

@@ -33,6 +33,9 @@ sh:
 isort:
 	docker compose exec -T airflow-scheduler isort .
 
+format:
+	docker compose exec -T airflow-scheduler python3 -m black -S --line-length 79 .
+
 lint: 
 	docker compose exec -T airflow-scheduler flake8 /opt/airflow/dags
 
